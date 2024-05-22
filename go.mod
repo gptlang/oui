@@ -1,4 +1,4 @@
-module github.com/aliask/oui
+module github.com/gptlang/oui
 
 go 1.22.3
 

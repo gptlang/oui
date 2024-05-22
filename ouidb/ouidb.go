@@ -2,6 +2,7 @@ package ouidb
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -100,7 +101,7 @@ func UpdateDatabase() {
 	fmt.Println("OUI database updated successfully.")
 }
 
-func Lookup(mac string) {
+func Lookup(mac string) (string, error) {
 	// IEEE doc uses all caps, so uppercase the input
 	mac = strings.ToUpper(mac)
 
@@ -111,21 +112,18 @@ func Lookup(mac string) {
 	match = r.Replace(match)
 
 	if match == "" {
-		fmt.Println("Invalid OUI supplied.")
-		return
+		return "", errors.New("Invalid OUI supplied.")
 	}
 
 	err := loadDatabase()
 	if err != nil {
-		fmt.Println("Error loading OUI database:", err)
-		fmt.Println("Run `oiu update` first if you haven't already!")
-		return
+		UpdateDatabase()
+		return "", err
 	}
 
 	manufacturer, ok := ouiData[match]
 	if !ok {
-		fmt.Println("Manufacturer not found for OUI:", match)
-		return
+		return "", errors.New("Manufacturer not found for OUI.")
 	}
-	fmt.Printf("Manufacturer for OUI %s is: %s\n", mac, manufacturer)
+	return manufacturer, nil
 }
